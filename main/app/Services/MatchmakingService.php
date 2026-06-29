@@ -48,7 +48,7 @@ class MatchmakingService
         // Begin transaction so both players are committed or neither is
         DB::beginTransaction();
         try {
-            $match = Match::create([
+            $match = Matchs::create([
                 'player1_id' => $waitingPlayerId,
                 'player2_id' => $userId,
                 'status'     => 'ongoing',
@@ -108,9 +108,9 @@ class MatchmakingService
         ];
     }
 
-    public function finishMatch(int $matchId, int $winnerId): Match
+    public function finishMatch(int $matchId, int $winnerId): Matchs
     {
-        $match = Match::findOrFail($matchId);
+        $match = Matchs::findOrFail($matchId);
         $loserId = $match->player1_id === $winnerId
                     ? $match->player2_id
                     : $match->player1_id;
