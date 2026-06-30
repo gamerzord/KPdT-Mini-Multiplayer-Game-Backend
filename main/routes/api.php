@@ -50,3 +50,10 @@ Route::middleware('jwt.auth')->group(function () {
         Route::get('/me',          [RankingController::class, 'myRank']);
     });
 });
+
+Route::get('/debug/which-server', function () {
+    return response()->json([
+        'hostname' => gethostname(), // returns container ID, different per container
+        'time'     => now(),
+    ]);
+});
