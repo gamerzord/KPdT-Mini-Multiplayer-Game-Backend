@@ -32,11 +32,7 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-<<<<<<< HEAD
             "Matchmaking\\": "grpc/generated/Matchmaking/"
-=======
-	    "Matchmaking\\": "grpc/generated/Matchmaking/"
->>>>>>> 3621f90 (goofy one)
         }
     },
     "autoload-dev": {

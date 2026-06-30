@@ -9,4 +9,6 @@ sudo docker exec laravel_app protoc \
 	--plugin=protoc-gen-grpc=/usr/local/bin/grpc_php_plugin \
 	grpc/protos/matchmaking.proto
 
+sudo chown -R $USER:$USER grpc/generated/
+
 echo "done!"

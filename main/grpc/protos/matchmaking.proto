@@ -2,14 +2,10 @@ syntax = "proto3";
 
 package matchmaking;
 
+// What matchmaking can ask ranking service to do
 service RankingService {
     rpc UpdateRanking (UpdateRankingRequest) returns (UpdateRankingResponse);
     rpc GetPlayerRank (GetPlayerRankRequest) returns (GetPlayerRankResponse);
-}
-
-// NEW — User service contract
-service UserService {
-    rpc ValidatePlayer (ValidatePlayerRequest) returns (ValidatePlayerResponse);
 }
 
 message UpdateRankingRequest {
@@ -36,15 +32,4 @@ message GetPlayerRankResponse {
     int32  wins     = 4;
     int32  losses   = 5;
     float  win_rate = 6;
-}
-
-// NEW messages
-message ValidatePlayerRequest {
-    int32 user_id = 1;
-}
-
-message ValidatePlayerResponse {
-    bool   exists = 1;
-    string name   = 2;
-    int32  score  = 3;
 }
