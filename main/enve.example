@@ -30,6 +30,9 @@ DB_PASSWORD=secret123
 DB_ROOT_PASSWORD=rootsecret123
 DB_REPL_USER=repl_user
 DB_REPL_PASSWORD=repl_password123
+USER_DB_WRITE_HOST=mysql_user_primary
+USER_DB_READ_HOST=mysql_user_replica
+USER_DB_DATABASE=user_service_db
 
 JWT_TTL=60
 

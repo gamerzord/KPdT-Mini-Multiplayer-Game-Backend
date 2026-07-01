@@ -71,3 +71,13 @@ Route::get('/consensus/status', function () {
         'nodes'        => $statuses,
     ]);
 });
+
+Route::get('/debug/fault-tolerance', function () {
+    return response()->json([
+        'status'    => 'success',
+        'server'    => gethostname(),
+        'db_write'  => DB::connection('mysql')->selectOne('SELECT @@hostname as host')->host,
+        'db_user'   => DB::connection('mysql_user')->selectOne('SELECT @@hostname as host')->host,
+        'timestamp' => now(),
+    ]);
+});

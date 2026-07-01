@@ -7,6 +7,9 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
+
+	protected $connection = 'mysql_user';
+	
     protected $fillable = [
         'name',
         'email', 

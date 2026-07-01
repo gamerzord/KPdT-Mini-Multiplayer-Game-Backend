@@ -38,22 +38,21 @@ class UserSeeder extends Seeder
             ],
         ];
 
-        foreach ($users as $userData) {
-            // firstOrCreate so running seeder twice won't duplicate
-            $user = User::firstOrCreate(
-                ['email' => $userData['email']],
-                $userData
-            );
+		foreach ($users as $userData) {
+		    // Force the primary/write connection for both operations
+		    $user = User::on('mysql')->firstOrCreate(
+		        ['email' => $userData['email']],
+		        $userData
+		    );
 
-            // Create ranking entry for each user
-            Ranking::firstOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'wins'   => 0,
-                    'losses' => 0,
-                    'points' => $user->score,
-                ]
-            );
-        }
+		    Ranking::on('mysql')->firstOrCreate(
+		        ['user_id' => $user->id],
+		        [
+		            'wins'   => 0,
+		            'losses' => 0,
+		            'points' => $user->score,
+		        ]
+		    );
+		}
     }
 }

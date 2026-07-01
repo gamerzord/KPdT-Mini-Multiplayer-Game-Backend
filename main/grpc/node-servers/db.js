@@ -22,6 +22,27 @@ const readPool = mysql.createPool({
   connectionLimit: 10,
 });
 
+// User Service DB — separate database entirely
+const userWritePool = mysql.createPool({
+  host:     process.env.USER_DB_WRITE_HOST || 'mysql_user_primary',
+  port:     process.env.DB_PORT            || 3306,
+  user:     process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.USER_DB_DATABASE   || 'user_service_db',
+  waitForConnections: true,
+  connectionLimit: 10,
+});
+
+const userReadPool = mysql.createPool({
+  host:     process.env.USER_DB_READ_HOST || 'mysql_user_replica',
+  port:     process.env.DB_PORT           || 3306,
+  user:     process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.USER_DB_DATABASE  || 'user_service_db',
+  waitForConnections: true,
+  connectionLimit: 10,
+});
+
 // Redis client
 const redisClient = redis.createClient({
   socket: {
@@ -39,4 +60,4 @@ async function initRedis() {
   }
 }
 
-module.exports = { writePool, readPool, redisClient, initRedis };
+module.exports = { writePool, readPool, userWritePool, userReadPool, redisClient, initRedis };

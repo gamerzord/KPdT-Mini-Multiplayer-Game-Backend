@@ -1,7 +1,8 @@
 const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 const path = require('path');
-const { pool } = require('./db');
+const { userWritePool, userReadPool } = require('./db');
+
 
 const PROTO_PATH = path.join(__dirname, '../protos/matchmaking.proto');
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
@@ -18,7 +19,7 @@ async function validatePlayer(call, callback) {
   const { userId } = call.request;
 
   try {
-    const [[user]] = await pool.query(
+    const [[user]] = await userReadPool.query(
       'SELECT * FROM users WHERE id = ?',
       [userId]
     );
@@ -43,7 +44,7 @@ async function updateUserScore(call, callback) {
   const { userId, newScore } = call.request;
 
   try {
-    const [[user]] = await writePool.query(
+    const [[user]] = await userWritePool.query(
       'SELECT score FROM users WHERE id = ?', [userId]
     );
 
@@ -53,7 +54,7 @@ async function updateUserScore(call, callback) {
 
     const prevScore = user.score;
 
-    await writePool.query(
+    await userWritePool.query(
       'UPDATE users SET score = ? WHERE id = ?', [newScore, userId]
     );
 
@@ -69,7 +70,7 @@ async function compensateUserScore(call, callback) {
   const { userId, prevScore } = call.request;
 
   try {
-    await writePool.query(
+    await userWritePool.query(
       'UPDATE users SET score = ? WHERE id = ?', [prevScore, userId]
     );
 
