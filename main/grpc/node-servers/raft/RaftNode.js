@@ -18,6 +18,7 @@ class RaftNode extends EventEmitter {
     this.state       = STATE.FOLLOWER;
     this.leaderId    = null;
     this.votesReceived = 0;
+    this.lastHeartbeat = Date.now(); // Track when we last heard from leader
 
     // Timers
     this.electionTimer   = null;
@@ -29,10 +30,17 @@ class RaftNode extends EventEmitter {
 
   // ── Timer helpers ─────────────────────────────────────
 
-  // Random timeout between 150-300ms — randomness prevents all nodes
-  // timing out simultaneously (which would cause a split vote)
+  // Random timeout between 300-600ms — wider range prevents split votes
+  // Also added nodeId-based offset to prevent all nodes timing out together
   randomElectionTimeout() {
-    return Math.floor(Math.random() * 150) + 150;
+    // Base timeout 300-600ms (increased from 150-300ms)
+    const baseTimeout = Math.floor(Math.random() * 300) + 300;
+    
+    // Add small offset based on nodeId to prevent all nodes timing out at once
+    // This is an extra safety measure
+    const nodeOffset = parseInt(this.nodeId.split('_')[2]) * 10;
+    
+    return baseTimeout + nodeOffset;
   }
 
   resetElectionTimer() {
@@ -50,11 +58,21 @@ class RaftNode extends EventEmitter {
   // ── Core Raft states ──────────────────────────────────
 
   startElection() {
-    // FIX: Don't start election if we already know who the leader is
-    if (this.leaderId && this.leaderId !== this.nodeId) {
-      console.log(`[${this.nodeId}] Already have leader ${this.leaderId}, not starting election`);
+    // FIX: Don't start election if we have a leader AND we've heard from them recently
+    // If leader hasn't sent heartbeat in 2 election cycles, it's probably dead
+    const heartbeatTimeout = this.randomElectionTimeout() * 2;
+    const timeSinceLastHeartbeat = Date.now() - this.lastHeartbeat;
+    
+    if (this.leaderId && this.leaderId !== this.nodeId && timeSinceLastHeartbeat < heartbeatTimeout) {
+      console.log(`[${this.nodeId}] Leader ${this.leaderId} is alive (heartbeat ${timeSinceLastHeartbeat}ms ago), not starting election`);
       this.resetElectionTimer();
       return;
+    }
+
+    // If we had a leader but no heartbeat, clear it
+    if (this.leaderId && timeSinceLastHeartbeat >= heartbeatTimeout) {
+      console.log(`[${this.nodeId}] Leader ${this.leaderId} seems dead (no heartbeat for ${timeSinceLastHeartbeat}ms), starting election`);
+      this.leaderId = null;
     }
 
     // Become candidate, increment term, vote for self
@@ -109,6 +127,7 @@ class RaftNode extends EventEmitter {
   becomeLeader() {
     this.state    = STATE.LEADER;
     this.leaderId = this.nodeId;
+    this.lastHeartbeat = Date.now(); // Update heartbeat time
     this.stopElectionTimer(); // leader doesn't need election timer
 
     console.log(`[${this.nodeId}] Became LEADER for term ${this.currentTerm}`);
@@ -181,8 +200,10 @@ class RaftNode extends EventEmitter {
       return { success: false, term: this.currentTerm };
     }
 
-    // Valid heartbeat — reset election timer, update leader
+    // Valid heartbeat — reset election timer, update leader and heartbeat time
     this.leaderId = leaderId;
+    this.lastHeartbeat = Date.now(); // ✅ Track when we heard from leader
+    
     if (term > this.currentTerm) {
       this.becomeFollower(term);
     } else if (this.state !== STATE.FOLLOWER) {
