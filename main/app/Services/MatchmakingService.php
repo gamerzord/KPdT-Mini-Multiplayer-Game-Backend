@@ -118,9 +118,9 @@ class MatchmakingService
         ];
     }
 
-    public function finishMatch(int $matchId, int $winnerId): Match
+    public function finishMatch(int $matchId, int $winnerId): Matchs
     {
-        $match   = Match::findOrFail($matchId);
+        $match   = Matchs::findOrFail($matchId);
         $loserId = $match->player1_id === $winnerId
                    ? $match->player2_id
                    : $match->player1_id;
